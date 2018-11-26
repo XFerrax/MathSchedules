@@ -38,6 +38,12 @@
             this.textBoxHeight = new System.Windows.Forms.TextBox();
             this.labelHeight = new System.Windows.Forms.Label();
             this.labelLenght = new System.Windows.Forms.Label();
+            this.backgroundWorkerCalc = new System.ComponentModel.BackgroundWorker();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.preTouchFileLable = new System.Windows.Forms.Label();
+            this.touchFileLable = new System.Windows.Forms.Label();
+            this.buttonCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonExit
@@ -49,6 +55,7 @@
             this.buttonExit.TabIndex = 0;
             this.buttonExit.Text = "Выход";
             this.buttonExit.UseVisualStyleBackColor = true;
+            this.buttonExit.Click += new System.EventHandler(this.ButtonExit_Click);
             // 
             // buttonCalc
             // 
@@ -63,13 +70,12 @@
             // 
             // buttonOpen
             // 
-            this.buttonOpen.Enabled = false;
             this.buttonOpen.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonOpen.Location = new System.Drawing.Point(173, 496);
             this.buttonOpen.Name = "buttonOpen";
             this.buttonOpen.Size = new System.Drawing.Size(155, 53);
             this.buttonOpen.TabIndex = 2;
-            this.buttonOpen.Text = "Открыть";
+            this.buttonOpen.Text = "Открыть...";
             this.buttonOpen.UseVisualStyleBackColor = true;
             // 
             // buttonSave
@@ -85,7 +91,6 @@
             // 
             // buttonGen
             // 
-            this.buttonGen.Enabled = false;
             this.buttonGen.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonGen.Location = new System.Drawing.Point(173, 437);
             this.buttonGen.Name = "buttonGen";
@@ -96,7 +101,6 @@
             // 
             // buttonTestload
             // 
-            this.buttonTestload.Enabled = false;
             this.buttonTestload.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonTestload.Location = new System.Drawing.Point(617, 437);
             this.buttonTestload.Name = "buttonTestload";
@@ -107,8 +111,10 @@
             // 
             // textBoxLenght
             // 
+            this.textBoxLenght.CharacterCasing = System.Windows.Forms.CharacterCasing.Lower;
             this.textBoxLenght.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBoxLenght.Location = new System.Drawing.Point(29, 448);
+            this.textBoxLenght.MaxLength = 2;
             this.textBoxLenght.Name = "textBoxLenght";
             this.textBoxLenght.Size = new System.Drawing.Size(45, 29);
             this.textBoxLenght.TabIndex = 6;
@@ -117,6 +123,7 @@
             // 
             this.textBoxHeight.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBoxHeight.Location = new System.Drawing.Point(108, 448);
+            this.textBoxHeight.MaxLength = 2;
             this.textBoxHeight.Name = "textBoxHeight";
             this.textBoxHeight.Size = new System.Drawing.Size(45, 29);
             this.textBoxHeight.TabIndex = 7;
@@ -141,11 +148,59 @@
             this.labelLenght.TabIndex = 9;
             this.labelLenght.Text = "Длина";
             // 
+            // backgroundWorkerCalc
+            // 
+            this.backgroundWorkerCalc.WorkerReportsProgress = true;
+            this.backgroundWorkerCalc.WorkerSupportsCancellation = true;
+            // 
+            // openFileDialog
+            // 
+            this.openFileDialog.FileName = "openFileDialog1";
+            // 
+            // saveFileDialog
+            // 
+            this.saveFileDialog.FileName = "saveFileDialog1";
+            // 
+            // preTouchFileLable
+            // 
+            this.preTouchFileLable.AutoSize = true;
+            this.preTouchFileLable.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.preTouchFileLable.Location = new System.Drawing.Point(12, 9);
+            this.preTouchFileLable.Name = "preTouchFileLable";
+            this.preTouchFileLable.Size = new System.Drawing.Size(83, 24);
+            this.preTouchFileLable.TabIndex = 10;
+            this.preTouchFileLable.Text = "Выбран:";
+            // 
+            // touchFileLable
+            // 
+            this.touchFileLable.AutoSize = true;
+            this.touchFileLable.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.touchFileLable.Location = new System.Drawing.Point(101, 9);
+            this.touchFileLable.Name = "touchFileLable";
+            this.touchFileLable.Size = new System.Drawing.Size(53, 24);
+            this.touchFileLable.TabIndex = 11;
+            this.touchFileLable.Text = "свой";
+            // 
+            // buttonCancel
+            // 
+            this.buttonCancel.Enabled = false;
+            this.buttonCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonCancel.Location = new System.Drawing.Point(617, 496);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(155, 53);
+            this.buttonCancel.TabIndex = 12;
+            this.buttonCancel.Text = "Отмена";
+            this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Visible = false;
+            // 
             // Form1Opt
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
+            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.touchFileLable);
+            this.Controls.Add(this.preTouchFileLable);
             this.Controls.Add(this.labelLenght);
             this.Controls.Add(this.labelHeight);
             this.Controls.Add(this.textBoxHeight);
@@ -176,6 +231,12 @@
         private System.Windows.Forms.TextBox textBoxHeight;
         private System.Windows.Forms.Label labelHeight;
         private System.Windows.Forms.Label labelLenght;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerCalc;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
+        private System.Windows.Forms.Label preTouchFileLable;
+        private System.Windows.Forms.Label touchFileLable;
+        private System.Windows.Forms.Button buttonCancel;
     }
 }
 
