@@ -44,6 +44,7 @@
             this.preTouchFileLable = new System.Windows.Forms.Label();
             this.touchFileLable = new System.Windows.Forms.Label();
             this.buttonCancel = new System.Windows.Forms.Button();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // buttonExit
@@ -152,6 +153,9 @@
             // 
             this.backgroundWorkerCalc.WorkerReportsProgress = true;
             this.backgroundWorkerCalc.WorkerSupportsCancellation = true;
+            this.backgroundWorkerCalc.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerCalc_DoWork);
+            this.backgroundWorkerCalc.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerCalc_ProgressChanged);
+            this.backgroundWorkerCalc.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerCalc_RunWorkerComplited);
             // 
             // openFileDialog
             // 
@@ -193,11 +197,19 @@
             this.buttonCancel.UseVisualStyleBackColor = true;
             this.buttonCancel.Visible = false;
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Location = new System.Drawing.Point(12, 378);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(760, 40);
+            this.progressBar1.TabIndex = 14;
+            // 
             // Form1Opt
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(784, 561);
+            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.touchFileLable);
             this.Controls.Add(this.preTouchFileLable);
@@ -237,6 +249,7 @@
         private System.Windows.Forms.Label preTouchFileLable;
         private System.Windows.Forms.Label touchFileLable;
         private System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

@@ -24,10 +24,15 @@ namespace MathSchedules
             buttonGen.Click += ButtonGen_Click;
             buttonSave.Click += ButtonSave_Click;
             buttonTestload.Click += ButtonTest_Click;
+            buttonCalc.Click += ButtonCalc_Click;
 
         }
 
         public int[,] schedule;
+        public int[,] tmp_schedule;
+        public string filename;
+        public string s_filename;
+        Graphics g = Graphics.FromHwnd(Form1Opt.Handle);
 
         void ButtonTest_Click(object sender, EventArgs e)
         {
@@ -83,8 +88,8 @@ namespace MathSchedules
             {
                 MessageBox.Show("Не выбрано место сохранения");
             }
-            string filename = saveFileDialog.FileName;
-            StreamWriter file = new StreamWriter(filename);
+            s_filename = saveFileDialog.FileName;
+            StreamWriter file = new StreamWriter(s_filename);
             file.WriteLine("start schedule");
             string str = null;
             for (int j = 0; j < schedule.GetLength(1); j++)
@@ -103,7 +108,10 @@ namespace MathSchedules
 
         void ButtonCalc_Click(object sender, EventArgs e)
         {
-            
+            if (backgroundWorkerCalc.IsBusy != true)
+            {
+                backgroundWorkerCalc.RunWorkerAsync(schedule);
+            }
         }
 
         void ButtonCancel_Click(object sender, EventArgs e)
@@ -144,7 +152,7 @@ namespace MathSchedules
                 return;
             }
             int m, n;
-            string filename = openFileDialog.FileName;
+            filename = openFileDialog.FileName;
             touchFileLable.Text = filename;
             textBoxHeight.Enabled = false;
             textBoxLenght.Enabled = false;
@@ -160,6 +168,45 @@ namespace MathSchedules
             str = Convert.ToString(n);
             textBoxHeight.Text = str;
             buttonCalc.Enabled = true;
+        }
+
+        private void backgroundWorkerCalc_DoWork(object sender, DoWorkEventArgs e)
+        {
+            int m, n, x, z;
+            x = 0;
+            m = schedule.GetLength(0);
+            n = schedule.GetLength(1);
+            int[,] loc_schedule = new int[m, n];
+            int[,] time_loc_schedule = new int[m, n];
+            loc_schedule = schedule;
+            for(int i = 0; i < m; i++)
+            {
+                time_loc_schedule[i, 0] = loc_schedule[i, 0];
+            }
+            for(int j=0; j < n; j++)
+            {
+                time_loc_schedule[0, j] = loc_schedule[0, j];
+            }
+            for(int i = 1; i < m; i++)
+            {
+                for(int j = 1; j < n; j++)
+                {
+                    CalculatingFunc.Max(time_loc_schedule[i - 1, j], time_loc_schedule[i, j - 1], out x);
+                    time_loc_schedule[i, j] = loc_schedule[i, j] + x;
+                }
+            }
+            
+
+        }
+
+        private void backgroundWorkerCalc_RunWorkerComplited(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+        }
+
+        private void backgroundWorkerCalc_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
         }
 
     }
@@ -186,8 +233,8 @@ namespace MathSchedules
             StreamReader ReadFile = File.OpenText(filename);
             string Input = null;
             string[] line = new string[1];
-            bool check, error;
-            check = error = false;
+            bool check;
+            check = false;
             m = n = 0;
             while ((Input = ReadFile.ReadLine()) != null)
             {
@@ -344,4 +391,28 @@ namespace MathSchedules
             return;
         }
     }
+
+    class CalculatingFunc
+    {
+        public static void Max(int a, int b, out int c)
+        {
+            if (a > b)
+            {
+                c = a;
+            }
+            else if (a < b)
+            {
+                c = b;
+            }
+            else
+            {
+                c = a;
+            }
+            return;
+        }
+
+
+
+    }
+
 }
