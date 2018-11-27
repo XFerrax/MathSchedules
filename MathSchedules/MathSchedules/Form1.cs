@@ -25,6 +25,7 @@ namespace MathSchedules
             buttonSave.Click += ButtonSave_Click;
             buttonTestload.Click += ButtonTest_Click;
             buttonCalc.Click += ButtonCalc_Click;
+            Graphics g = this.CreateGraphics();
 
         }
 
@@ -32,7 +33,7 @@ namespace MathSchedules
         public int[,] tmp_schedule;
         public string filename;
         public string s_filename;
-        Graphics g = Graphics.FromHwnd(Form1Opt.Handle);
+
 
         void ButtonTest_Click(object sender, EventArgs e)
         {
@@ -162,40 +163,36 @@ namespace MathSchedules
             buttonExit.Visible = false;
             buttonCancel.Visible = true;
             buttonCancel.Enabled = true;
-            LoaderParameters.LoadParams(filename, out schedule, out m, out n);
-            string str = Convert.ToString(m);
-            textBoxLenght.Text = str;
-            str = Convert.ToString(n);
-            textBoxHeight.Text = str;
+            LoaderParameters.LoadParams(filename, out schedule);
+            Functions.Gets_mn(schedule, out m, out n);
+            textBoxLenght.Text = n.ToString();
+            textBoxHeight.Text = m.ToString();
             buttonCalc.Enabled = true;
         }
 
         private void backgroundWorkerCalc_DoWork(object sender, DoWorkEventArgs e)
         {
-            int m, n, x, z;
-            x = 0;
-            m = schedule.GetLength(0);
-            n = schedule.GetLength(1);
+
+            StreamWriter file = new StreamWriter("C:/Users/Ferrax/Documents/Schedules/output.txt");
+            int m, n;
+            Functions.Gets_mn(schedule, out m, out n);
             int[,] loc_schedule = new int[m, n];
             int[,] time_loc_schedule = new int[m, n];
             loc_schedule = schedule;
-            for(int i = 0; i < m; i++)
-            {
-                time_loc_schedule[i, 0] = loc_schedule[i, 0];
-            }
-            for(int j=0; j < n; j++)
-            {
-                time_loc_schedule[0, j] = loc_schedule[0, j];
-            }
-            for(int i = 1; i < m; i++)
-            {
-                for(int j = 1; j < n; j++)
-                {
-                    CalculatingFunc.Max(time_loc_schedule[i - 1, j], time_loc_schedule[i, j - 1], out x);
-                    time_loc_schedule[i, j] = loc_schedule[i, j] + x;
-                }
-            }
-            
+            Functions.writer(loc_schedule, file, "schadule");
+            Functions.timeMatrix(loc_schedule, out time_loc_schedule);
+            Functions.writer(time_loc_schedule, file, "time");
+            int t = 1;
+            Functions.MaxBranchs(time_loc_schedule, out t);
+            int[,,] mtx_path = new int[(m + n - 1), 3, t];    //построение пути в матрице времен
+            bool check = false;
+            t = 0;
+            Functions.mtxPathGen(time_loc_schedule, t, check, ref mtx_path);
+            Functions.writer(mtx_path, file);
+
+
+            file.Close();
+
 
         }
 
@@ -213,6 +210,7 @@ namespace MathSchedules
 
     class LoaderParameters  //Перегружаемый класс загрузки параметров
     {
+
         public static void LoadParams(int m, int n, int z, out int[,] massive) //Загрузка рандомной матрицы выбранного размера
         {
             massive = new int[m,n];
@@ -228,13 +226,14 @@ namespace MathSchedules
             return;
         }
 
-        public static void LoadParams(string filename, out int[,] massive, out int m, out int n) //Загрузка матрицы взятой из файла, !!!Файл должен быть правильно написан!!!
+        public static void LoadParams(string filename, out int[,] massive) //Загрузка матрицы взятой из файла, !!!Файл должен быть правильно написан!!!
         {
             StreamReader ReadFile = File.OpenText(filename);
             string Input = null;
             string[] line = new string[1];
             bool check;
             check = false;
+            int m, n;
             m = n = 0;
             while ((Input = ReadFile.ReadLine()) != null)
             {
@@ -390,10 +389,12 @@ namespace MathSchedules
             massive[9, 9] = 36;
             return;
         }
+
     }
 
-    class CalculatingFunc
+    class Functions
     {
+
         public static void Max(int a, int b, out int c)
         {
             if (a > b)
@@ -409,9 +410,201 @@ namespace MathSchedules
                 c = a;
             }
             return;
-        }
+        }  //Выбор максимального
 
+        public static void writer(int[,] massive, StreamWriter file, string control)
+        {
+            string str = null;
+            switch (control)
+            {
+                case "schadule":
+                    str += "start schedule\n";
+                    break;
+                case "time":
+                    str += "start time matrix\n";
+                    break;
+            }
+            int m, n;
+            Functions.Gets_mn(massive, out m, out n);
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    str += Convert.ToString(massive[i, j]) + ' ';
+                }
+                str = str.Trim() + "\n";
+            }
+            str += "###\n\n";
+            file.Write(str);
+        }  //запись в файл матрицы
 
+        public static void writer(int[,,] massive, StreamWriter file)
+        {
+            string str = null;
+            int m, n, l, k;
+            Functions.Gets_mn(massive, out m, out n, out l);
+            for (int i = 0; i < l; i++)
+            {
+                if (i == 0)
+                {
+                    continue;
+                }
+                if (massive[0, 0, i] > massive[0, 0, (i - 1)])
+                {
+                    l = massive[0, 0, i];
+                }
+            }
+            k = 0;
+            while (m <= l)
+            {
+                str += "Path " + Convert.ToString(k + 1) + "\n";
+                for (int i = 0; i < m; i++)
+                {
+                    for (int j = 0; j < n; j++)
+                    {
+                        str += Convert.ToString(massive[i, j, k]) + ' ';
+                    }
+                    str = str.Trim() + "\n";
+                }
+                str += "###\n\n";
+                file.Write(str);
+            }
+            return;
+        }  //Запись в файл таблиц путей
+
+        public static void timeMatrix(int[,] massive, out int[,] o_massive)
+        {
+            int m, n;
+            Functions.Gets_mn(massive, out m, out n);
+            int x = 0;
+            o_massive = new int[m, n];
+            o_massive[0, 0] = massive[0, 0];
+            for (int i = 1; i < m; i++)
+            {
+                o_massive[i, 0] = massive[i, 0] + massive[(i - 1), 0];
+            }
+            for (int j = 1; j < n; j++)
+            {
+                o_massive[0, j] = massive[0, j] + massive[0, (j - 1)];
+            }
+            for (int i = 1; i < m; i++)
+            {
+                for (int j = 1; j < n; j++)
+                {
+                    Functions.Max(o_massive[(i - 1), j], o_massive[i, (j - 1)], out x);
+                    o_massive[i, j] = massive[i, j] + x;
+                }
+            }
+            return;
+        }  //Построение матрицы времен
+
+        public static void mtxPathGen(int[,] massive, int t, bool check, ref int[,,] mtxPath)
+        {
+            int m, n, k;
+            k = 0;
+            t++;
+            Functions.Gets_mn(massive, out m, out n);
+            int i, j;
+            i = m;
+            j = n;
+            mtxPath[k, 0, t] = i;
+            mtxPath[k, 1, t] = j;
+            mtxPath[k, 2, t] = t;
+
+            while (i >= 0)
+            {
+                while (j >= 0)
+                {
+                    if ((i == 0) && (j == 0))
+                    {
+                        return;
+                    }
+                    else if (i == 0)
+                    {
+                        j--;
+                    }
+                    else if (j == 0)
+                    {
+                        i--;
+                    }
+                    else
+                    {
+                        if (massive[(i - 1), j] > massive[i, (j - 1)])
+                        {
+                            i--;
+                        }
+                        else if (massive[(i - 1), j] < massive[i, (j - 1)])
+                        {
+                            j--;
+                        }
+                        else if ((massive[(i - 1), j] == massive[i, (j - 1)]) && !check)
+                        {
+                            check = true;
+                            mtxPathGen(massive, t, check, ref mtxPath);
+                            i--;
+                        }
+                        else
+                        {
+                            j--;
+                        }
+                    }
+                    k++;
+                }
+            }
+            
+        }  //Рекурсивное построение путей
+
+        public static void Gets_mn(int[,] massive, out int m, out int n)
+        {
+            m = massive.GetLength(0);
+            n = massive.GetLength(1);
+            return;
+        }  //получение размерности квадратной матрицы
+
+        public static void Gets_mn(int[,,] massive, out int m, out int n, out int l)
+        {
+            m = massive.GetLength(0);
+            n = massive.GetLength(1);
+            l = massive.GetLength(2);
+            return;
+        }   //получение размерностей объемной матрицы
+
+        public static void MaxBranchs(int[,] massive, out int x)
+        {
+            int m, n;
+            Functions.Gets_mn(massive, out m, out n);
+            int i, j;
+            i = m - 1;
+            x = 1;
+            while (i >= 0)
+            {
+                j = n - 1;
+                while (j >= 0)
+                {
+                    if ((i == 0) && (j == 0))
+                    {
+                        return;
+                    }
+                    else if (i == 0)
+                    {
+                        j--;
+                    }
+                    else if (j == 0)
+                    {
+                        i--;
+                    }
+                    else
+                    {
+                        if (massive[(i - 1), j] == massive[i, (j - 1)])
+                        {
+                            x++;
+                        }
+                        j--;
+                    }
+                }
+            }
+            return;
+        }   //Максимальное количество путей
 
     }
 
