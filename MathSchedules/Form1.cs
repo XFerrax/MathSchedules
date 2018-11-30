@@ -176,19 +176,22 @@ namespace MathSchedules
             StreamWriter file = new StreamWriter("C:/Users/Ferrax/Documents/Schedules/output.txt");
             int m, n;
             Functions.Gets_mn(schedule, out m, out n);
+
+
+
             int[,] loc_schedule = new int[m, n];
             int[,] time_loc_schedule = new int[m, n];
             loc_schedule = schedule;
-            Functions.writer(loc_schedule, file, "schadule");
-            Functions.timeMatrix(loc_schedule, out time_loc_schedule);
-            Functions.writer(time_loc_schedule, file, "time");
+            Functions.Writer(loc_schedule, file, "schadule");
+            Functions.TimeMatrix(loc_schedule, out time_loc_schedule);
+            Functions.Writer(time_loc_schedule, file, "time");
             int t = 1;
             Functions.MaxBranchs(time_loc_schedule, out t);
             int[,,] mtx_path = new int[(m + n - 1), 3, t];    //построение пути в матрице времен
             bool check = false;
             t = 0;
-            Functions.mtxPathGen(time_loc_schedule, t, check, ref mtx_path);
-            Functions.writer(mtx_path, file);
+            Functions.MtxPathGen(time_loc_schedule, t, check, ref mtx_path);
+            Functions.Writer(mtx_path, file);
 
 
             file.Close();
@@ -412,7 +415,7 @@ namespace MathSchedules
             return;
         }  //Выбор максимального
 
-        public static void writer(int[,] massive, StreamWriter file, string control)
+        public static void Writer(int[,] massive, StreamWriter file, string control)
         {
             string str = null;
             switch (control)
@@ -438,7 +441,7 @@ namespace MathSchedules
             file.Write(str);
         }  //запись в файл матрицы
 
-        public static void writer(int[,,] massive, StreamWriter file)
+        public static void Writer(int[,,] massive, StreamWriter file)
         {
             string str = null;
             int m, n, l, k;
@@ -472,7 +475,7 @@ namespace MathSchedules
             return;
         }  //Запись в файл таблиц путей
 
-        public static void timeMatrix(int[,] massive, out int[,] o_massive)
+        public static void TimeMatrix(int[,] massive, out int[,] o_massive)
         {
             int m, n;
             Functions.Gets_mn(massive, out m, out n);
@@ -498,7 +501,7 @@ namespace MathSchedules
             return;
         }  //Построение матрицы времен
 
-        public static void mtxPathGen(int[,] massive, int t, bool check, ref int[,,] mtxPath)
+        public static void MtxPathGen(int[,] massive, int t, bool check, ref int[,,] mtxPath)
         {
             int m, n, k;
             k = 0;
@@ -540,7 +543,7 @@ namespace MathSchedules
                         else if ((massive[(i - 1), j] == massive[i, (j - 1)]) && !check)
                         {
                             check = true;
-                            mtxPathGen(massive, t, check, ref mtxPath);
+                            MtxPathGen(massive, t, check, ref mtxPath);
                             i--;
                         }
                         else
@@ -606,6 +609,41 @@ namespace MathSchedules
             return;
         }   //Максимальное количество путей
 
+        public static void Omega(int k, int l, ref int[,] massive)
+        {
+
+            int[,] t_a = new int[massive.GetLength(0), massive.GetLength(1)];
+            t_a = massive;
+            if (k > l)
+            {
+                for(int j = l; j <= k; j++)
+                {
+                    for(int i=0; i<massive.GetLength(0); i++)
+                    {
+                        if (j == l)
+                        {
+                            t_a[i, j] = massive[i, k];
+                        }
+                    }
+                    
+                }
+            }
+
+        }
+
+    }
+
+    struct Machine
+    {
+
+        int Numer;
+        int[] Works;
+
+    }
+
+    struct Schedule
+    {
+        int[] schedule;
     }
 
 }
